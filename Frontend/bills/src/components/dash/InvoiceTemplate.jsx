@@ -8,7 +8,7 @@ const InvoiceTemplate = React.forwardRef(({ bill }, ref) => {
       {/* Header */}
       <div className="flex justify-between items-start mb-10">
         <div>
-          <h1 className="text-4xl font-bold text-blue-600 italic">Saffron Design</h1>
+          <h1 className="text-4xl font-bold text-blue-600 italic">Anand InfoTech</h1>
           <p className="text-sm mt-2 text-gray-600">77 Namrata Bldg<br />Delhi, Delhi 400077</p>
         </div>
         <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center text-gray-400 font-bold border-4 border-white shadow-sm">
@@ -31,8 +31,8 @@ const InvoiceTemplate = React.forwardRef(({ bill }, ref) => {
         <div className="text-right space-y-1">
           <p><span className="font-bold text-blue-500">Invoice #</span> {bill.bill_no}</p>
           <p><span className="font-bold text-blue-500">Invoice Date</span> {bill.bill_date}</p>
-          <p><span className="font-bold text-blue-500">P.O.#</span> 2430/2019</p>
-          <p><span className="font-bold text-blue-500">Due Date</span> 26/04/2019</p>
+          {/* <p><span className="font-bold text-blue-500">P.O.#</span> 2430/2019</p>
+          <p><span className="font-bold text-blue-500">Due Date</span> 26/04/2019</p> */}
         </div>
       </div>
 
@@ -77,7 +77,7 @@ const InvoiceTemplate = React.forwardRef(({ bill }, ref) => {
           </div>
           <div className="pt-10">
              <p className="font-serif text-2xl italic">Priya Chopra</p>
-             <div className="h-[1px] bg-black w-32 ml-auto mt-1"></div>
+             <div className="h-px bg-black w-32 ml-auto mt-1"></div>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 
-const API = "http://172.24.29.33:7500/bills/";
+const API = "http://192.168.1.11:7500/bills/";
 
 // ==============================
 // INVOICE DESIGN COMPONENT
@@ -77,7 +77,7 @@ const PrintableInvoice = ({ bill }) => {
         </div>
         <div className="w-1/3 text-right space-y-2">
           <div className="flex justify-between text-sm"><span>Subtotal</span> <span>{Number(bill.grand_total).toLocaleString('en-IN')}</span></div>
-          <div className="flex justify-between text-sm text-gray-500 italic"><span>GST 12.0%</span> <span>1,469.52</span></div>
+          <div className="flex justify-between text-sm text-gray-500 italic"><span>GST 12.0%</span> <span>{Number(bill.grand_total * 0.12).toLocaleString('en-IN')}</span></div>
           <div className="flex justify-between text-xl font-bold text-blue-600 border-t-2 border-blue-500 pt-2">
             <span>Total</span> <span>₹{Number(bill.grand_total).toLocaleString('en-IN')}</span>
           </div>
@@ -108,10 +108,8 @@ const View = () => {
   const [endDate, setEndDate] = useState("");
   const [activeBill, setActiveBill] = useState(null);
 
-  // Updated Ref for v3 logic
   const contentRef = useRef(null);
 
-  // Updated hook syntax for react-to-print v3+
   const handlePrint = useReactToPrint({
     contentRef,
     documentTitle: activeBill ? `Invoice_${activeBill.bill_no}` : "Invoice",
@@ -131,7 +129,6 @@ const View = () => {
 
   const triggerPrint = (bill) => {
     setActiveBill(bill);
-    // Timeout gives React time to update the activeBill state and render the component
     setTimeout(() => {
       if (contentRef.current) {
         handlePrint();
@@ -146,70 +143,106 @@ const View = () => {
 
   return (
     <div className="p-10 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Invoice Dashboard</h1>
+      
+      {/* TOP NAVIGATION BAR */}
+      <div className="flex items-center gap-4 mb-8">
+        <button 
+          onClick={() => window.history.back()} 
+          className="flex items-center justify-center w-10 h-10 bg-white rounded-xl shadow-sm border border-gray-200 hover:bg-gray-100 transition-all active:scale-90 text-gray-700 font-bold text-xl"
+        >
+          ←
+        </button>
+        <div>
+          <h1 className="text-3xl font-black text-gray-800 tracking-tight">Invoice Dashboard</h1>
+          <p className="text-sm text-gray-500">View and manage your recent transactions</p>
+        </div>
+      </div>
 
       {/* DASHBOARD STATS */}
-      <div className="grid grid-cols-2 md:grid-cols-2 gap-5 mb-8">
-        <div className="bg-white shadow p-6 rounded-xl border-l-4 border-blue-500">
-          <h2 className="text-gray-400 uppercase text-[10px] font-black tracking-widest mb-1">Total Invoices</h2>
-          <p className="text-3xl font-black text-blue-600 leading-none">{bills.length}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+        <div className="bg-white shadow p-6 rounded-2xl border-l-4 border-blue-500 flex justify-between items-center">
+          <div>
+            <h2 className="text-gray-400 uppercase text-[10px] font-black tracking-widest mb-1">Total Invoices</h2>
+            <p className="text-3xl font-black text-blue-600 leading-none">{bills.length}</p>
+          </div>
+          <div className="bg-blue-50 p-3 rounded-lg text-blue-500">📄</div>
         </div>
-        <div className="bg-white shadow p-6 rounded-xl border-l-4 border-green-500">
-          <h2 className="text-gray-400 uppercase text-[10px] font-black tracking-widest mb-1">Total Revenue</h2>
-          <p className="text-3xl font-black text-green-600 leading-none">₹{bills.reduce((sum, b) => sum + Number(b.grand_total || 0), 0).toLocaleString()}</p>
+        <div className="bg-white shadow p-6 rounded-2xl border-l-4 border-green-500 flex justify-between items-center">
+          <div>
+            <h2 className="text-gray-400 uppercase text-[10px] font-black tracking-widest mb-1">Total Revenue</h2>
+            <p className="text-3xl font-black text-green-600 leading-none">
+                ₹{bills.reduce((sum, b) => sum + Number(b.grand_total || 0), 0).toLocaleString('en-IN')}
+            </p>
+          </div>
+          <div className="bg-green-50 p-3 rounded-lg text-green-500">💰</div>
         </div>
       </div>
 
       {/* SEARCH + FILTER */}
-      <div className="flex flex-wrap gap-3 mb-8 bg-white p-4 rounded-lg shadow-sm">
-        <input 
-          placeholder="Search Client or Bill ID..." 
-          className="border border-gray-200 p-2 rounded-lg w-72 shadow-inner focus:ring-2 focus:ring-blue-200 outline-none" 
-          onChange={(e) => setSearch(e.target.value)} 
-        />
-        <div className="flex items-center gap-2">
-          <input type="date" className="border border-gray-200 p-2 rounded-lg text-sm" onChange={(e) => setStartDate(e.target.value)} />
-          <span className="text-gray-400">to</span>
-          <input type="date" className="border border-gray-200 p-2 rounded-lg text-sm" onChange={(e) => setEndDate(e.target.value)} />
+      <div className="flex flex-wrap items-center gap-4 mb-8 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+        <div className="flex-1 min-w-[300px]">
+            <input 
+            placeholder="Search Client or Bill ID..." 
+            className="w-full border border-gray-200 p-3 rounded-xl bg-gray-50 shadow-inner focus:ring-2 focus:ring-blue-200 outline-none transition-all" 
+            onChange={(e) => setSearch(e.target.value)} 
+            />
         </div>
-        <button onClick={fetchBills} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition active:scale-95">Filter</button>
+        <div className="flex items-center gap-3">
+          <input type="date" className="border border-gray-200 p-3 rounded-xl text-sm bg-gray-50 outline-none focus:ring-2 focus:ring-blue-100" onChange={(e) => setStartDate(e.target.value)} />
+          <span className="text-gray-400 font-bold">to</span>
+          <input type="date" className="border border-gray-200 p-3 rounded-xl text-sm bg-gray-50 outline-none focus:ring-2 focus:ring-blue-100" onChange={(e) => setEndDate(e.target.value)} />
+        </div>
+        <button onClick={fetchBills} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition active:scale-95 shadow-lg shadow-blue-200">
+            Filter Results
+        </button>
       </div>
 
       {/* TABLE */}
-      <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+      <div className="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
         <table className="w-full text-left">
           <thead className="bg-gray-50 border-b border-gray-100 uppercase text-[11px] font-black tracking-widest text-gray-400">
             <tr>
-              <th className="p-5">Bill No</th>
-              <th className="p-5">Date</th>
-              <th className="p-5">Client</th>
-              <th className="p-5 text-right">Total</th>
-              <th className="p-5 text-center">Actions</th>
+              <th className="p-6">Bill No</th>
+              <th className="p-6">Date</th>
+              <th className="p-6">Client Name</th>
+              <th className="p-6 text-right">Total Amount</th>
+              <th className="p-6 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {filteredBills.map((bill, index) => (
-              <tr key={index} className="hover:bg-blue-50/50 transition cursor-default">
-                <td className="p-5 font-bold text-gray-700">{bill.bill_no}</td>
-                <td className="p-5 text-gray-500 font-medium">{bill.bill_date}</td>
-                <td className="p-5 font-black text-gray-800 tracking-tight">{bill.client_name}</td>
-                <td className="p-5 text-right font-black text-blue-600 text-lg">₹{bill.grand_total}</td>
-                <td className="p-5 flex justify-center gap-2">
-                  <button onClick={() => triggerPrint(bill)} className="bg-blue-500 text-white px-5 py-2 rounded-lg text-xs font-bold hover:bg-blue-600 shadow-md active:translate-y-px">
-                    Print / PDF
+            {filteredBills.length > 0 ? filteredBills.map((bill, index) => (
+              <tr key={index} className="hover:bg-blue-50/50 transition-colors group">
+                <td className="p-6 font-bold text-gray-700">{bill.bill_no}</td>
+                <td className="p-6 text-gray-500 font-medium">{bill.bill_date}</td>
+                <td className="p-6 font-black text-gray-800 tracking-tight">{bill.client_name}</td>
+                <td className="p-6 text-right font-black text-blue-600 text-lg">
+                    ₹{Number(bill.grand_total).toLocaleString('en-IN')}
+                </td>
+                <td className="p-6 flex justify-center gap-3">
+                  <button 
+                    onClick={() => triggerPrint(bill)} 
+                    className="bg-blue-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-blue-600 shadow-md transition active:translate-y-px"
+                  >
+                    PRINT PDF
                   </button>
-                  <button className="bg-red-50 text-red-500 border border-red-100 px-5 py-2 rounded-lg text-xs font-bold hover:bg-red-500 hover:text-white transition">
-                    Delete
+                  <button className="bg-red-50 text-red-500 border border-red-100 px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition-all">
+                    DELETE
                   </button>
                 </td>
               </tr>
-            ))}
+            )) : (
+                <tr>
+                    <td colSpan="5" className="p-20 text-center text-gray-400 font-medium italic">
+                        No invoices found matching your criteria.
+                    </td>
+                </tr>
+            )}
           </tbody>
         </table>
       </div>
 
       {/* HIDDEN PRINTABLE AREA */}
-      <div className="hidden">
+      <div style={{ display: "none" }}>
         <div ref={contentRef}>
           <PrintableInvoice bill={activeBill} />
         </div>

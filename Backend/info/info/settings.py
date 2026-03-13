@@ -30,8 +30,9 @@ ALLOWED_HOSTS = ["*"]
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:7600",
-    'http://192.168.1.10:7600',
+    'http://192.168.1.11:7600',
     'http://172.24.29.33:7600',
+    'http://192.168.1.4:7600,'
 ]
 # Application definition
 

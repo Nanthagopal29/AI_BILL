@@ -6,10 +6,20 @@ import {
   DocumentTextIcon, 
   UserGroupIcon, 
   CurrencyRupeeIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  ArrowLeftIcon,
+  XMarkIcon
 } from "@heroicons/react/24/outline";
+import { useNavigate } from "react-router-dom";
 
 const Create = () => {
+  const navigate = useNavigate();
+  
+  // State for UI Feedback
+  const [showModal, setShowModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // State for Bill Data
   const [bill, setBill] = useState({
     bill_no: "",
     date: new Date().toISOString().split("T")[0],
@@ -19,7 +29,7 @@ const Create = () => {
     email: "",
     gstnum: "",
     payment_type: "UPI",
-    items: [{ description: "", hsn_sac: "", unit: "PCS", qty: 1, rate: 0, amount: 0 }],
+    items: [{ description: "", hsn_sac: "", unit: "", qty: 1, rate: 0, amount: 0 }],
   });
 
   // Generate unique Bill Number on load
@@ -41,7 +51,7 @@ const Create = () => {
     const items = [...bill.items];
     items[index][field] = value;
     if (field === "qty" || field === "rate") {
-      items[index].amount = items[index].qty * items[index].rate;
+      items[index].amount = Number(items[index].qty) * Number(items[index].rate);
     }
     setBill({ ...bill, items });
   };
@@ -66,8 +76,8 @@ const Create = () => {
     return new Intl.NumberFormat('en-IN').format(num) + " Only";
   };
 
-  // FIXED SAVE FUNCTION
   const saveBill = async () => {
+    setIsSaving(true);
     const payload = {
       bill_no: bill.bill_no,
       bill_date: bill.date,
@@ -84,7 +94,7 @@ const Create = () => {
     };
 
     try {
-      const res = await fetch("http://172.24.29.33:7500/bills/", {
+      const res = await fetch("http://192.168.1.11:7500/bills/", {
         method: "POST",
         headers: { 
             "Content-Type": "application/json",
@@ -94,7 +104,7 @@ const Create = () => {
       });
 
       if (res.ok) {
-        alert("✅ Invoice Saved Successfully to Anand InfoTech");
+        setShowModal(true);
       } else {
         const errorData = await res.json().catch(() => ({}));
         console.error("Server Error:", errorData);
@@ -102,7 +112,9 @@ const Create = () => {
       }
     } catch (err) {
       console.error("Network Error:", err);
-      alert("❌ Connection Error: Ensure you are on the office network (172.24.xx.xx)");
+      alert("❌ Connection Error: Ensure you are on the office network.");
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -110,23 +122,66 @@ const Create = () => {
 
   return (
     <div className="min-h-screen bg-[#f1f5f9] text-slate-900 font-sans pb-10">
+      
+      {/* POPUP MODAL */}
+      {showModal && (
+        <div className="fixed inset-0  flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 text-center animate-in fade-in zoom-in duration-300">
+            <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-6">
+              <CheckCircleIcon className="h-12 w-12 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-black text-slate-800">Saved Successfully!</h2>
+            <p className="text-slate-500 mt-2 font-medium">Invoice <span className="text-blue-600 font-bold">{bill.bill_no}</span> has been created for Anand InfoTech.</p>
+            
+            <div className="mt-8 space-y-3">
+              <button 
+                onClick={() => navigate("home")}
+                className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all active:scale-95"
+              >
+                Go to Home
+              </button>
+              <button 
+                onClick={() => window.location.reload()}
+                className="w-full py-3 bg-white text-slate-600 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all"
+              >
+                Create New Bill
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Header */}
       <nav className="bg-slate-900 text-white shadow-lg px-6 py-3 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-500 p-2 rounded-lg">
-              <DocumentTextIcon className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-black tracking-tight uppercase">Anand InfoTech</h1>
-              <p className="text-[10px] text-blue-300 font-medium tracking-[0.2em] leading-none">BILLING SYSTEM</p>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => navigate("/home")} 
+              className="p-2 hover:bg-slate-800 rounded-full transition-colors group"
+              title="Go Back"
+            >
+              <ArrowLeftIcon className="h-5 w-5 text-slate-400 group-hover:text-white" />
+            </button>
+            <div className="flex items-center gap-3 border-l border-slate-700 pl-4">
+              <div className="bg-blue-500 p-2 rounded-lg">
+                <DocumentTextIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-black tracking-tight uppercase leading-none">Anand InfoTech</h1>
+                <p className="text-[10px] text-blue-300 font-medium tracking-[0.2em] mt-1">BILLING SYSTEM</p>
+              </div>
             </div>
           </div>
           <button 
             onClick={saveBill} 
-            className="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white px-6 py-2 rounded-md font-bold flex items-center gap-2 transition-all shadow-md"
+            disabled={isSaving}
+            className={`${isSaving ? 'bg-slate-700 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500'} active:scale-95 text-white px-6 py-2 rounded-md font-bold flex items-center gap-2 transition-all shadow-md`}
           >
-            <CheckCircleIcon className="h-5 w-5" /> Save Invoice
+            {isSaving ? (
+                <span className="flex items-center gap-2">Saving...</span>
+            ) : (
+                <><CheckCircleIcon className="h-5 w-5" /> Save Invoice</>
+            )}
           </button>
         </div>
       </nav>
@@ -199,10 +254,10 @@ const Create = () => {
                           <input className="w-full bg-transparent text-center text-xs" value={item.unit} onChange={(e) => handleItemChange(index, "unit", e.target.value)} />
                         </td>
                         <td className="px-3 py-3">
-                          <input type="number" className="w-full bg-white border border-slate-200 rounded py-1 text-center font-bold text-sm" value={item.qty} onChange={(e) => handleItemChange(index, "qty", Number(e.target.value))} />
+                          <input type="number" className="w-full bg-white border border-slate-200 rounded py-1 text-center font-bold text-sm" value={item.qty} onChange={(e) => handleItemChange(index, "qty", e.target.value)} />
                         </td>
                         <td className="px-3 py-3">
-                          <input type="number" className="w-full bg-transparent text-right focus:outline-none text-sm" value={item.rate} onChange={(e) => handleItemChange(index, "rate", Number(e.target.value))} />
+                          <input type="number" className="w-full bg-transparent text-right focus:outline-none text-sm" value={item.rate} onChange={(e) => handleItemChange(index, "rate", e.target.value)} />
                         </td>
                         <td className="px-6 py-3 text-right font-bold text-slate-700 text-sm">
                           ₹{item.amount.toLocaleString()}
