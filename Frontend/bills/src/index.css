@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .clip-path-wave {
+    clip-path: ellipse(100% 100% at 50% 100%);
+  }
+}
