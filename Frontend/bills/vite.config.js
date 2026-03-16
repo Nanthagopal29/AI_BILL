@@ -8,6 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': 'http://192.168.1.11:7500',
+      
     },
     host:true,
     open: true,
