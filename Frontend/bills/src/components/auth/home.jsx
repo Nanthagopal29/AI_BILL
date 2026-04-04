@@ -1,9 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LogOut, FilePlus, Eye, CreditCard } from "lucide-react"; // Using lucide-react for icons
+import { useEffect } from "react";
+import { getToken, logout } from "../../utils/auth";
 
 const Home = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!getToken()) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   // Animation Variants
   const containerVars = {
@@ -53,7 +61,10 @@ const Home = () => {
         className="absolute top-8 right-8 z-20"
       >
         <button 
-          onClick={() => navigate("/")}
+          onClick={() => {
+            logout();
+            navigate("/");
+          }}
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-red-600 bg-white/50 hover:bg-white backdrop-blur-sm rounded-full border border-gray-200 transition-all shadow-sm active:scale-95"
         >
           <LogOut size={18} />

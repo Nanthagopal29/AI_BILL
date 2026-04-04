@@ -8,20 +8,14 @@
 from django.db import models
 
 
-class TrsBills(models.Model):
-    bill_no = models.CharField(unique=True, max_length=20)
-    bill_date = models.DateField()
-    payment_type = models.CharField(max_length=20)
-    client_name = models.CharField(max_length=100)
-    client_mobile = models.CharField(max_length=15)
-    client_email = models.CharField(max_length=254, blank=True, null=True)
-    client_address = models.TextField()
-    gstnum = models.CharField(max_length=15, blank=True, null=True)
-    sub_total = models.DecimalField(max_digits=10, decimal_places=2)
-    grand_total = models.DecimalField(max_digits=10, decimal_places=2)
-    amount_words = models.CharField(max_length=255)
+class UserLogin(models.Model):
+    username = models.CharField(primary_key=True, unique=True, max_length=50)
+    password = models.CharField(max_length=255)
+    email = models.CharField(max_length=100, blank=True, null=True)
+    role = models.CharField(max_length=50, blank=True, null=True)
+    is_active = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'trs_bills'
+        db_table = 'user_login'

@@ -1,141 +1,177 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, Lock, User, Eye, EyeOff, Loader2, Info } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ArrowRight, KeyRound, ShieldCheck, Sparkles, User2 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { API_BASE_URL } from "../../utils/auth";
+import { Input, Button } from "./forms";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
-  const [pin, setPin] = useState("");
-  const [showPin, setShowPin] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  useEffect(() => {
+    if (location.state?.registeredUsername) {
+      setUsername(location.state.registeredUsername);
+      toast.success("Account created. Sign in to continue.");
+    }
+
+    if (location.state?.passwordReset) {
+      toast.success("Password updated. Please sign in.");
+    }
+  }, [location.state]);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Professional delay mimics server-side verification
-    setTimeout(() => {
-      if (username === "Admin" && (pin === "6383" || pin === "7305")) {
-        toast.success("Authentication Successful");
-        setTimeout(() => navigate("/home"), 1000);
-      } else {
-        toast.error("Invalid credentials. Please contact your administrator.");
-        setIsLoading(false);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
       }
-    }, 1800);
+
+      localStorage.setItem("authToken", data.token);
+      localStorage.setItem("authUser", JSON.stringify(data.user || {}));
+      toast.success("Welcome back");
+      setTimeout(() => navigate("/home"), 700);
+    } catch (error) {
+      toast.error(error.message || "Invalid credentials. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafc] text-slate-900 font-sans selection:bg-blue-100">
-      
-      {/* Subtle Professional Background */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-100/30 rounded-full blur-3xl" />
-      </div>
-
+    <div className="min-h-screen overflow-hidden bg-slate-50 text-slate-900">
       <ToastContainer position="top-right" theme="colored" hideProgressBar />
+      <div className="relative min-h-screen">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.08),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(79,70,229,0.08),_transparent_30%),linear-gradient(135deg,_#f8fafc_0%,_#f1f5f9_100%)]" />
+        <div className="absolute -left-16 top-20 h-56 w-56 rounded-full border border-blue-200/30 bg-blue-100/30 blur-3xl" />
+        <div className="absolute right-0 top-0 h-80 w-80 rounded-full bg-indigo-100/30 blur-3xl" />
 
-      <motion.div 
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full max-w-[420px] px-4"
-      >
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-2 text-blue-600">
-              <ShieldCheck size={24} strokeWidth={2.5} />
-              <span className="font-bold tracking-tight text-lg">Anand InfoTech</span>
-            </div>
-            <h1 className="text-2xl font-semibold text-slate-900">Sign in</h1>
-            <p className="text-slate-500 text-sm mt-1">Enter your credentials to access the console.</p>
-          </div>
+        <div className="relative z-10 mx-auto grid min-h-screen max-w-7xl items-center gap-10 px-6 py-10 lg:grid-cols-[1.05fr_0.95fr]">
+          <motion.section initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} className="hidden lg:block">
+            <div className="max-w-xl">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/70 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm backdrop-blur">
+                <Sparkles size={16} />
+                Modern billing access
+              </div>
+              <h1 className="font-serif text-6xl leading-[1.02] tracking-tight text-slate-900">
+                Sign in to the
+                <span className="block text-blue-600">Anand InfoTech desk</span>
+              </h1>
+              <p className="mt-6 max-w-lg text-lg leading-8 text-slate-600">
+                Handle invoices, customer billing, and daily operations from one focused workspace designed for speed.
+              </p>
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            {/* Username */}
-            <div className="space-y-1.5">
-              <label className="text-[13px] font-medium text-slate-700 ml-0.5">Username</label>
-              <div className="relative group">
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                  <User size={18} />
+              <div className="mt-10 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-3xl border border-white/80 bg-white/70 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur">
+                  <div className="mb-3 inline-flex rounded-2xl bg-blue-50 p-3 text-blue-600">
+                    <ShieldCheck size={20} />
+                  </div>
+                  <h2 className="text-base font-semibold text-slate-900">Protected sessions</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    JWT-backed authentication keeps billing actions restricted to signed-in users.
+                  </p>
                 </div>
-                <input
-                  type="text"
+
+                <div className="rounded-3xl border border-white/80 bg-[#0f172a] p-5 text-slate-50 shadow-[0_18px_50px_rgba(15,23,42,0.18)]">
+                  <div className="mb-3 inline-flex rounded-2xl bg-indigo-500/20 p-3 text-indigo-300">
+                    <KeyRound size={20} />
+                  </div>
+                  <h2 className="text-base font-semibold">Simple recovery</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    Forgot password is built in, so users can recover access without leaving the app.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+
+          <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mx-auto w-full max-w-xl">
+            <div className="rounded-[2rem] border border-white/80 bg-white/85 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur md:p-8">
+              <div className="mb-8 flex items-start justify-between gap-4">
+                <div>
+                  <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-white">
+                    <ShieldCheck size={14} />
+                    Secure Login
+                  </div>
+                  <h2 className="text-3xl font-semibold tracking-tight text-slate-900">Welcome back</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-500">
+                    Enter your account credentials to open the dashboard.
+                  </p>
+                </div>
+                <div className="hidden rounded-3xl bg-blue-50 px-4 py-3 text-right text-xs font-medium text-blue-700 sm:block">
+                  Billing
+                  <span className="block text-lg font-semibold text-slate-900">Portal</span>
+                </div>
+              </div>
+
+              <form onSubmit={handleLogin} className="space-y-5">
+                <Input
+                  label="Username"
+                  icon={User2}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 py-3 pl-11 pr-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm placeholder:text-slate-400"
-                  placeholder="e.g. j.doe"
+                  placeholder="Enter your username"
                   required
                 />
-              </div>
-            </div>
 
-            {/* PIN/Passkey */}
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-center px-0.5">
-                <label className="text-[13px] font-medium text-slate-700">Access PIN</label>
-              
-              </div>
-              <div className="relative group">
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                  <Lock size={18} />
-                </div>
-                <input
-                  type={showPin ? "text" : "password"}
-                  maxLength="4"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 py-3 pl-11 pr-12 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm tracking-[0.2em] placeholder:tracking-normal placeholder:text-slate-400"
-                  placeholder="••••"
+                <Input
+                  label="Password"
+                  type="password"
+                  icon={KeyRound}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
                   required
+                  labelRight={
+                    <button
+                      type="button"
+                      onClick={() => navigate("/forgot-password")}
+                      className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
+                    >
+                      Forgot password?
+                    </button>
+                  }
                 />
-                <button 
-                  type="button"
-                  onClick={() => setShowPin(!showPin)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  {showPin ? <EyeOff size={18} /> : <Eye size={18} />}
+
+                <Button disabled={isLoading}>
+                  {isLoading ? "Signing in..." : <>Continue to Dashboard<ArrowRight size={18} /></>}
+                </Button>
+              </form>
+
+              <div className="mt-6 flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/50 px-4 py-3 text-sm text-slate-600">
+                <ShieldCheck size={16} className="text-blue-600" />
+                Signed-in sessions are required for bill creation, updates, and viewing records.
+              </div>
+
+              <div className="mt-6 text-center text-sm text-slate-500">
+                New to the system?{" "}
+                <button type="button" onClick={() => navigate("/register")} className="font-semibold text-blue-600 transition hover:text-blue-700">
+                  Create an account
                 </button>
               </div>
             </div>
-
-            {/* Submit */}
-            <button
-              disabled={isLoading}
-              className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium text-sm transition-all flex items-center justify-center shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="animate-spin mr-2" size={18} />
-                  Verifying Identity...
-                </>
-              ) : (
-                "Continue to Dashboard"
-              )}
-            </button>
-          </form>
-
-          {/* Security Banner */}
-          <div className="mt-8 flex items-start gap-3 p-3 bg-blue-50/50 rounded-lg border border-blue-100">
-            <Info className="text-blue-500 shrink-0" size={16} />
-            <p className="text-[11px] text-blue-700/80 leading-relaxed">
-              This session is protected by end-to-end encryption. Unauthorized access attempts are logged and reported.
-            </p>
-          </div>
+          </motion.section>
         </div>
-
-        {/* External Links */}
-        <div className="mt-6 flex justify-center gap-6 text-[12px] text-slate-400 font-medium">
-          <button className="hover:text-slate-600">Privacy Policy</button>
-          <button className="hover:text-slate-600">Support</button>
-          <button className="hover:text-slate-600">Terms of Service</button>
-        </div>
-      </motion.div>
+      </div>
     </div>
   );
 };

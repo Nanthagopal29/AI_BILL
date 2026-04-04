@@ -31,3 +31,16 @@ class Billitem(models.Model):
     class Meta:
         managed = False
         db_table = 'trs_billitem'
+
+
+class UserLogin(models.Model):
+    username = models.CharField(primary_key=True, unique=True, max_length=50)
+    password = models.CharField(max_length=255)
+    email = models.CharField(max_length=100, blank=True, null=True)
+    role = models.CharField(max_length=50, blank=True, null=True)
+    is_active = models.IntegerField(blank=True, null=True)
+    created_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'user_login'
